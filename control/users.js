@@ -34,19 +34,29 @@ router.post('/add/user', (req, res) => {
     })
 })
 
-//查询
+//查询  传id 可以单独查询对应的数据  传也可以分页
 router.get('/user/list', (req, res) => {
+    const { page, pageSize,id } = req.query;
+    //10一条    (page-1)*10    十条一页
+    // pageSize 是查询条数
+    let limitNum = 10
+    let pageNum = 1
+    if (page && pageSize) {
+        limitNum = pageSize
+        pageNum = page
+    }
+    let skipNum = (Number(pageNum)-1)*10
     const find = (params) => {
-        Users.find(params, (err, doc) => {
+        Users.find(params).skip(skipNum).limit(Number(limitNum)).exec((err, doc) => {
             if (err) throw new Error(err)
-             res.json({
+            res.json({
                 code: 200,
                 data: doc,
-                msg:'查询成功'
+                total:doc.length,
+                msg: '查询成功',
             })
         })
     }
-    const { id } = req.query
     if (id) return find({ _id: id });//查询单条
     find({})//查询全部
     
